@@ -4,7 +4,7 @@ HEADER = philo.h
 
 dirlibft = libft/
 
-srcs = check.c philo.c main.c error.c
+srcs = check.c philo.c main.c error.c philo_utils.c philo_utils2.c
 
 obj = $(srcs:%.c=%.o)
 
