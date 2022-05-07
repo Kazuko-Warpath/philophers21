@@ -6,7 +6,7 @@
 /*   By: kwarpath <kwarpath@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/28 13:18:41 by kwarpath          #+#    #+#             */
-/*   Updated: 2022/04/30 18:40:26 by kwarpath         ###   ########.fr       */
+/*   Updated: 2022/05/07 13:13:39 by kwarpath         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,10 +65,24 @@ typedef struct s_data_ph
 	t_timeval	program_start_time;
 }		t_data_ph;
 
-int	checker_argc(int ac);
-int	checker_argv(char **av);
-int	checker_value_argv(int ac, char **av);
-int	ft_error(int err_id);
-int	ft_init(int ac, char **av, t_data_ph *data);
-
+int		checker_argc(int ac);
+int		checker_argv(char **av);
+int		checker_value_argv(int ac, char **av);
+int		ft_error(int err_id);
+int		ft_init(int ac, char **av, t_data_ph *data);
+int		ft_fork_lock(t_fork *fork);
+int		ft_fork_unlock(t_fork *fork);
+int		ft_forks_destroy(t_fork *forks, int forks_count);
+void	simulate(t_fork *forks, t_philo *philos, t_data_ph *util);
+int		ft_philo_sleep(t_philo *philo);
+int		ft_philo_eat(t_philo *philo, int was_sleeping);
+int		ft_philo_think(t_philo *philo);
+int		ft_philo_was_died(t_philo *philo, t_data_ph *util);
+long	ft_get_current_time(t_philo *philo);
+int		ft_print(t_philo *philo, int condition);
+void	ft_update_last_time_eat(t_timeval *tv, t_philo *philo, int was_sleeping);
+int		ft_forks_init(t_fork *forks, int forks_count);
+void	*ft_philo(void *data);
+int		ft_philos_init(t_philo *philo, int philo_count,
+	t_fork *forks, t_data_ph *util);
 #endif

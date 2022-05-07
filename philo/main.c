@@ -6,7 +6,7 @@
 /*   By: kwarpath <kwarpath@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/28 13:06:08 by kwarpath          #+#    #+#             */
-/*   Updated: 2022/04/30 18:40:44 by kwarpath         ###   ########.fr       */
+/*   Updated: 2022/05/07 14:02:06 by kwarpath         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,17 +76,17 @@ int	main(int argc, char **argv)
 	t_philo		philos[PHILO_MAX];
 
 	if(checker_argc(argc) == -1)
-		return(0);
+		return(1);
 	if(checker_argv(argv) == -1)
-		return(0);
+		return(1);
 	if(checker_value_argv(argc, argv))
-		return(0);
+		return(1);
 	if(ft_init(argc, argv, &all) == -1)
-		return(ft_error(4));
-	if(ft_init_forks(forks, all.num_philo) == -1)
-		return(ft_error(4));
-	if(ft_init_philo() == -1)
-		return(ft_error(4));
+		return(1);
+	if(ft_forks_init(forks, all.num_philo) == -1)
+		return(1);
+	if(ft_philos_init(philos, all.num_philo, forks, &all) == -1)
+		return(1);
 	simulate(forks, philos, &all);
 	return(0);
 }
