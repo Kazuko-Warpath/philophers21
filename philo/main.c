@@ -6,87 +6,77 @@
 /*   By: kwarpath <kwarpath@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/28 13:06:08 by kwarpath          #+#    #+#             */
-/*   Updated: 2022/05/07 14:02:06 by kwarpath         ###   ########.fr       */
+/*   Updated: 2022/04/30 16:41:07 by kwarpath         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 
-int	ft_fork_lock(t_fork *fork)
+void	*ft_philo(void *data)
 {
-	pthread_mutex_lock(&fork->mutex);
-	fork->is_busy = 1;
-	return (0);
-}
-
-int	ft_fork_unlock(t_fork *fork)
-{
-	fork->is_busy = 0;
-	pthread_mutex_unlock(&fork->mutex);
-	return (0);
-}
-
-int	ft_forks_destroy(t_fork *forks, int forks_count)
-{
-	int	i;
-
-	i = 0;
-	while (i < forks_count)
+	if (((t_philo *)data)->philo_type % 2 == 0)
+		usleep(2500);
+	ft_philo_eat((t_philo *) data, 0);
+	ft_philo_sleep((t_philo *) data);
+	ft_philo_think((t_philo *) data);
+	while (1)
 	{
-		forks[i].fork_type = i + 1;
-		if (pthread_mutex_destroy(&forks[i].mutex))
-			return (-1);
+		ft_philo_eat((t_philo *) data, 1);
+		ft_philo_sleep((t_philo *) data);
+		ft_philo_think((t_philo *) data);
 	}
 	return (0);
 }
 
-void	simulate(t_fork *forks, t_philo *philos, t_data_ph *util)
+int	ft_simulate(t_fork *forks, t_philo *philos, t_data *data)
 {
 	while (1)
 	{
-		util->i = 0;
-		util->eating_times_flag = 1;
-		while (util->i < util->num_philo)
+		data->i = 0;
+		data->eating_times = 1;
+		while (data->i < data->num_philo)
 		{
-			if (util->count_eat == -1
-				|| philos[util->i].eating_times < util->count_eat)
-				util->eating_times_flag = 0;
-			if (ft_philo_was_died(&philos[util->i], util))
+			if (data->eating_times == -1
+				|| philos[data->i].eating_times < data->eating_times)
+				data->eating_times = 0;
+			if (ft_philo_was_died(&philos[data->i], data))
 			{
-				ft_print(&philos[util->i], DYING);
-				ft_forks_destroy(forks, util->num_philo);
-				pthread_mutex_destroy(&util->stdout_mutex);
-				return ;
+				ft_print(&philos[data->i], DYING);
+				ft_forks_destroy(forks, data->num_philo);
+				pthread_mutex_destroy(&data->stdout_mutex);
+				return (1);
 			}
-			++util->i;
+			++data->i;
 		}
-		if (util->eating_times_flag)
+		if (data->eating_times)
 		{
-			ft_forks_destroy(forks, util->num_philo);
-			pthread_mutex_destroy(&util->stdout_mutex);
-			return ;
+			ft_forks_destroy(forks, data->num_philo);
+			pthread_mutex_destroy(&data->stdout_mutex);
+			return (0);
 		}
 	}
 }
 
 int	main(int argc, char **argv)
 {
-	t_data_ph	all;
-	t_fork		forks[PHILO_MAX];
-	t_philo		philos[PHILO_MAX];
+	t_data	*data;
+	t_fork	forks[PHILO_MAX];
+	t_philo	philos[PHILO_MAX];
 
 	if(checker_argc(argc) == -1)
-		return(1);
+		return(0);
 	if(checker_argv(argv) == -1)
-		return(1);
+		return(0);
 	if(checker_value_argv(argc, argv))
-		return(1);
-	if(ft_init(argc, argv, &all) == -1)
-		return(1);
-	if(ft_forks_init(forks, all.num_philo) == -1)
-		return(1);
-	if(ft_philos_init(philos, all.num_philo, forks, &all) == -1)
-		return(1);
-	simulate(forks, philos, &all);
+		return(0);
+	data = ft_init(argc, argv);
+	if(!data)
+		return(0);
+	if (ft_forks_init(forks, data->num_philo))
+		return (1);
+	if (ft_philos_init(philos, data->num_philo, forks, &data))
+		return (1);
+	return (ft_simulate(forks, philos, &data));
+
 	return(0);
 }

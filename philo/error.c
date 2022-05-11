@@ -6,7 +6,7 @@
 /*   By: kwarpath <kwarpath@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/28 13:18:33 by kwarpath          #+#    #+#             */
-/*   Updated: 2022/04/30 18:07:55 by kwarpath         ###   ########.fr       */
+/*   Updated: 2022/04/28 17:16:29 by kwarpath         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,5 @@ int ft_error(int err_id)
 		printf("arguments must be numbers\n");
 	if(err_id == 3)
 		printf("not value arguments");
-	if(err_id == 4)
-		printf("system failed");
 	return(-1);
 }

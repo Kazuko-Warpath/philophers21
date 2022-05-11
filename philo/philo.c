@@ -6,17 +6,72 @@
 /*   By: kwarpath <kwarpath@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/28 13:18:38 by kwarpath          #+#    #+#             */
-/*   Updated: 2022/04/30 18:30:20 by kwarpath         ###   ########.fr       */
+/*   Updated: 2022/04/30 16:36:50 by kwarpath         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 
-int	ft_init(int ac, char **av, t_data_ph *data)
+long	ft_get_current_time(t_philo *philo)
 {
-	data = malloc(sizeof(t_data_ph));
+	t_timeval	tm;
+
+	gettimeofday(&tm, 0);
+	return ((tm.tv_sec - philo->c_program_start_time.tv_sec) * 1000
+		+ (tm.tv_usec - philo->c_program_start_time.tv_usec) / 1000);
+}
+
+int	ft_print(t_philo *philo, int condition)
+{
+	pthread_mutex_lock(philo->stdout_mutex);
+	if (condition == EATING)
+		printf("%ld %d is eating\n",
+			ft_get_current_time(philo), philo->philo_type);
+	else if (condition == SLEEPING)
+		printf("%ld %d is sleeping\n",
+			ft_get_current_time(philo), philo->philo_type);
+	else if (condition == THINKING)
+		printf("%ld %d is thinking\n",
+			ft_get_current_time(philo), philo->philo_type);
+	else if (condition == TAKING_FORK)
+		printf("%ld %d has taken a fork\n",
+			ft_get_current_time(philo), philo->philo_type);
+	else if (condition == DYING)
+	{
+		printf("%ld %d died\n",
+			ft_get_current_time(philo), philo->philo_type);
+		return (0);
+	}
+	pthread_mutex_unlock(philo->stdout_mutex);
+	return (0);
+}
+
+void	ft_update_last_time_eat(t_timeval *tv, t_philo *philo, int was_sleeping)
+{
+	tv->tv_usec += philo->c_time_to_eat * 1000;
+	if (tv->tv_usec >= 100000)
+	{
+		tv->tv_sec++;
+		tv->tv_usec -= 100000;
+	}
+	if (was_sleeping)
+	{
+		tv->tv_usec += philo->c_time_to_sleep;
+		if (tv->tv_usec >= 100000)
+		{
+			tv->tv_sec++;
+			tv->tv_usec -= 100000;
+		}
+	}
+}
+
+t_data	*ft_init(int ac, char **av)
+{
+	t_data	*data;
+
+	data = malloc(sizeof(t_data));
 	if(!data)
-		return (-1);
+		return (NULL);
 	data->num_philo = ft_atoi(av[1]);
 	data->time_die = ft_atoi(av[2]);
 	data->time_eat = ft_atoi(av[3]);
@@ -24,68 +79,5 @@ int	ft_init(int ac, char **av, t_data_ph *data)
 	data->count_eat = -1;
 	if(ac == 6)
 		data->count_eat = ft_atoi(av[5]);
-	if(pthread_mutex_init(&data->stdout_mutex, 0))
-		return(1);
-	gettimeofday(&data->program_start_time, 0);
-	return (0);
-}
-
-int	ft_forks_init(t_fork *forks, int forks_count)
-{
-	int	i;
-
-	i = 0;
-	while (i < forks_count)
-	{
-		forks[i].fork_type = i + 1;
-		forks[i].is_busy = 0;
-		if (pthread_mutex_init(&forks[i].mutex, 0))
-			return (-1);
-		i++;
-	}
-	return (0);
-}
-
-void	*ft_philo(void *data)
-{
-	if (((t_philo *)data)->philo_type % 2 == 0)
-		usleep(2500);
-	ft_philo_eat((t_philo *) data, 0);//написать
-	ft_philo_sleep((t_philo *) data);//написать
-	ft_philo_think((t_philo *) data);//написать
-	while (1)
-	{
-		ft_philo_eat((t_philo *) data, 1);//написать
-		ft_philo_sleep((t_philo *) data);//написать
-		ft_philo_think((t_philo *) data);//написать
-	}
-	return (0);
-}
-
-int	ft_philos_init(t_philo *philo, int philo_count,
-	t_fork *forks, t_data_ph *util)
-{
-	int			i;
-	pthread_t	ptid;
-
-	i = 0;
-	while (i < philo_count)
-	{
-		philo[i].philo_type = i + 1;
-		philo[i].left = forks + i;
-		philo[i].right = forks + ((i + 1) % util->num_philo);
-		philo[i].stdout_mutex = &util->stdout_mutex;
-		if (pthread_mutex_init(&philo[i].condition_mutex, 0))
-			return (1);
-		philo[i].eating_times = 0;
-		philo[i].c_time_to_eat = util->time_eat;
-		philo[i].c_time_to_sleep = util->time_sleep;
-		philo[i].c_program_start_time = util->program_start_time;
-		gettimeofday(&philo[i].last_time_eat, 0);
-		if (pthread_create(&ptid, 0, ft_philo, &(philo[i])))
-			return (1);
-		pthread_detach(ptid);
-		i++;
-	}
-	return (0);
+	return(data);
 }
